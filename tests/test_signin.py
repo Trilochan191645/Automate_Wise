@@ -55,7 +55,7 @@ class TestWiseAdmitLogin:
             "@nodomain.com",
             "spaces in@email.com",
             "double@@domain.com"
-            
+
         ]
 
         for email in invalid_emails:
@@ -69,10 +69,9 @@ class TestWiseAdmitLogin:
         page.get_by_role("textbox", name="Email Address").fill(self.VALID_EMAIL)
         page.get_by_role("button", name="Log in").click()
 
-        page.locator("input[name='password']").fill("")
-        page.get_by_role("button", name="Log in").click()
+     
 
-        expect(page.get_by_text("Required")).to_be_visible(timeout=3000)
+        expect(page.get_by_text('Required')).to_be_visible(timeout=3000)
 
 
 @pytest.fixture(scope="session")
