@@ -55,6 +55,7 @@ class TestWiseAdmitLogin:
             "@nodomain.com",
             "spaces in@email.com",
             "double@@domain.com"
+            
         ]
 
         for email in invalid_emails:
