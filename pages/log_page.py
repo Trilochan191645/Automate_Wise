@@ -1,0 +1,20 @@
+from playwright.sync_api import Page, expect
+
+class LoginPage:
+    def __init__(self, page: Page):
+        self.page = page
+        self.email_input = page.get_by_role("textbox", name="email@example.com")
+        self.password_input = page.get_by_role("textbox", name="••••••••")
+        self.login_button = page.get_by_role("button", name="Login")
+
+    def navigate(self):
+        self.page.goto("http://69.62.123.60:3010/admin/login")
+
+        
+    def login(self,email:str,password: str):
+        self.email_input.fill(email)
+        self.password_input.fill(password)
+        self.login_button.click()
+        
+    def verify_login_success(self):
+        expect(self.page.get_by_role("link", name="HTR Care Supp.")).to_be_visible()
