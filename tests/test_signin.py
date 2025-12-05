@@ -84,3 +84,4 @@ def browser_context_args(browser_context_args):
 
 if __name__ == "__main__":
     pytest.main(["-v", "--headed"])
+    

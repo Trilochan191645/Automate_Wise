@@ -1,9 +1,9 @@
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 from pages.login_page import LoginPage
 
+
 class TestWiseAdmitLogin:
-    """Test suite for WiseAdmit login functionality"""
 
     BASE_URL = "https://www.wiseadmit.io/"
     VALID_EMAIL = "t.kafle191645@gmail.com"
@@ -11,28 +11,41 @@ class TestWiseAdmitLogin:
 
     @pytest.fixture(autouse=True)
     def setup(self, page: Page):
-        """Setup fixture runs before every test"""
+        """Navigate to login page before each test using POM"""
         self.login = LoginPage(page)
-        self.login.open_sign_in_page()  # navigate to student login page
+        self.login.navigate(self.BASE_URL)
+        return page
 
     def test_valid_login(self, page: Page):
-        """Verify valid login works"""
-        self.login.login(self.VALID_EMAIL, self.VALID_PASSWORD)
-        self.login.assert_dashboard_visible()                  # wait for dashboard
-        self.login.assert_text_visible("Nishan Kafle")        # verify user name
+        """Verify Valid Login"""
+        self.login.enter_email(self.VALID_EMAIL)
+        self.login.click_login()
+        self.login.enter_password(self.VALID_PASSWORD)
+        self.login.click_login()
+
+        expect(page.get_by_role("link", name="Dashboard")).to_be_visible(timeout=10000)
+        expect(page.get_by_text("Nishan Kafle")).to_be_visible()
 
     def test_invalid_email_valid_password(self, page: Page):
-        """Verify login fails with invalid email"""
-        self.login.login("invalid@email.com", self.VALID_PASSWORD)
-        self.login.assert_text_visible("Failed to get student")
+        """Invalid email + valid password"""
+        self.login.enter_email("invalid@email.com")
+        self.login.click_login()
+
+        expect(page.get_by_text("Failed to get student")).to_be_visible(timeout=5000)
 
     def test_valid_email_incorrect_password(self, page: Page):
-        """Verify login fails with valid email and wrong password"""
-        self.login.login(self.VALID_EMAIL, "WrongPassword123")
-        self.login.assert_text_visible("Invalid Credentials")
+        """Valid email + incorrect password"""
+        self.login.enter_email(self.VALID_EMAIL)
+        self.login.click_login()
+
+        self.login.enter_password("WrongPassword123")
+        self.login.click_login()
+
+        expect(page.get_by_text("Invalid Credentials")).to_be_visible(timeout=5000)
 
     def test_email_format_validation(self, page: Page):
-        """Verify email format validation"""
+        """Invalid email format validation"""
+
         invalid_emails = [
             "notanemail",
             "missing@domain",
@@ -40,12 +53,17 @@ class TestWiseAdmitLogin:
             "spaces in@email.com",
             "double@@domain.com"
         ]
+
         for email in invalid_emails:
-            self.login.login(email)
-            self.login.assert_text_visible("Invalid Email")
-            self.login.clear_email()
+            self.login.enter_email(email)
+            self.login.click_login()
+
+            expect(page.get_by_text("Invalid Email")).to_be_visible(timeout=3000)
+            self.login.enter_email("")  # clear field
 
     def test_empty_password_validation(self, page: Page):
-        """Verify empty password triggers required validation"""
-        self.login.login(self.VALID_EMAIL, password="")
-        self.login.assert_text_visible("Required")
+        """Empty password validation"""
+        self.login.enter_email(self.VALID_EMAIL)
+        self.login.click_login()
+
+        expect(page.get_by_text("Required")).to_be_visible(timeout=3000)
